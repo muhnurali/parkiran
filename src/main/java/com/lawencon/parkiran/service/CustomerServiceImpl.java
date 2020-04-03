@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.lawencon.parkiran.dao.AccountDao;
 import com.lawencon.parkiran.dao.CustomerDao;
-import com.lawencon.parkiran.model.Account;
 import com.lawencon.parkiran.model.Customer;
 
 @Service
@@ -17,28 +15,27 @@ import com.lawencon.parkiran.model.Customer;
 public class CustomerServiceImpl implements CustomerService {
 	
 	@Autowired
-	@Qualifier("customer_jpa")
+	@Qualifier("customer_hibernate")
 	CustomerDao customerDao;
 	
 	@Autowired
-	@Qualifier("account_jpa")
-	AccountDao accountDao;
+	AccountService accountService;
 
 	@Override
 	public List<Customer> checkInReport(String username, String password) throws Exception {
-		cekAccount(username, password);
+		accountService.cekAccount(username, password);
 		return customerDao.checkInReport();
 	}
 
 	@Override
 	public List<Customer> checkOutReport(String username, String password) throws Exception {
-		cekAccount(username, password);
+		accountService.cekAccount(username, password);
 		return customerDao.checkOutReport();
 	}
 
 	@Override
 	public String checkIn(Customer customer, String username, String password) throws Exception {
-		cekAccount(username, password);	
+		accountService.cekAccount(username, password);
 		char noPol1 = customer.getPlatNo().charAt(0);
 		int noPol2 = Integer.parseInt(customer.getPlatNo().substring(1, 5));
 		String noPol3 = customer.getPlatNo().substring(5, 8);
@@ -63,7 +60,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public String checkOut(Customer customer, String username, String password) throws Exception {	
-		cekAccount(username, password);
+		accountService.cekAccount(username, password);
 		List<Customer> temp = customerDao.customerCheckOut(customer);
 		if (temp.get(0).getPlatNo() != null) {
 			customer.setCusId(temp.get(0).getCusId());
@@ -83,16 +80,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public List<Customer> getAll(String username, String password) throws Exception {
-		cekAccount(username, password);
+		accountService.cekAccount(username, password);
 		return customerDao.getAll();
 	}
-	
-	public void cekAccount(String username, String password) throws Exception {
-		List<Account> listAcount = accountDao.checkAcount(username, password);
-		if (listAcount.get(0).getUsername() == null) {
-			throw new Exception();
-		}
-	}
-
 
 }
